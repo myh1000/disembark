@@ -4,7 +4,8 @@ Depends: mobilesubstrate
 Version: 1.0
 Architecture: iphoneos-arm
 Description: Don't have to go to settings to turn on stuff
-Homepage: https://myh1000.github.io/cydia/
+Homepage:
+Depiction: https://myh1000.github.io/cydia/
 Maintainer: Michael Huang <myh1000@gmail.com>
 Author: Josh Doctors
 Section: Tweaks
