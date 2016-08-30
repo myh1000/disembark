@@ -2,28 +2,31 @@
 #import <UIKit/UIKit.h>
 #import "substrate.h"
 
- 
-@interface SBTelephonyManager : NSObject {}
--(BOOL)isInAirplaneMode;
--(void)setIsInAirplaneMode:(BOOL)airplaneMode;
-+(id)sharedTelephonyManager;
-//-(BOOL)airplaneModeEnabled;
-//-(void)flipAirplaneMode;
-@end
- 
+
+// @interface SBTelephonyManager : NSObject {}
+// -(BOOL)isInAirplaneMode;
+// -(void)setIsInAirplaneMode:(BOOL)airplaneMode;
+// +(id)sharedTelephonyManager;
+// //-(BOOL)airplaneModeEnabled;
+// //-(void)flipAirplaneMode;
+// @end
+
+extern "C" Boolean CTCellularDataPlanGetIsEnabled();
+extern "C" void CTCellularDataPlanSetIsEnabled(Boolean enabled);
+
 @interface SBWiFiManager : NSObject {}
 -(void)setWiFiEnabled:(BOOL)enabled;
 -(BOOL)wiFiEnabled;
 +(id)sharedInstance;
 @end
- 
+
 /*@interface CLLocationManager : NSObject {}
 -(BOOL)locationServicesEnabled;
 -(void)setLocationServicesEnabled:(BOOL)
- 
+
 @end*/
- 
-static SBTelephonyManager *telephonyManager;
+
+// static SBTelephonyManager *telephonyManager;
 static SBWiFiManager *wiFiManager;
 
 //opening maps - SBLaunchAlertItem - settings - ok | Turn Off Airplane Mode or Use Wi-Fi to Access Data
@@ -32,11 +35,11 @@ static SBWiFiManager *wiFiManager;
 //Trying to call - SBLaunchAlertItem - you must disable airplane mode to place a call(title) - cancel | disable
 //SBUserNotificationAlert - WiFi settings - ok | No Network Connection  (title) Connect t a wifi network or cellular data to use facetime AUDIO.
 %hook SBAlertItemsController
- 
+
  /*
  static void SBAlertItemDiscard(SBAlertItemsController * controller, SBAlertItem * alert) {
 
-    if ([alert isKindOfClass:[%c(SBUserNotificationAlert) class]]) 
+    if ([alert isKindOfClass:[%c(SBUserNotificationAlert) class]])
     {
 
         if ([[(SBUserNotificationAlert *)alert alertHeader] isEqual:TRUST_THIS_COMPUTER_string]) {
@@ -64,25 +67,27 @@ static SBWiFiManager *wiFiManager;
 //SBLaunchAlertItem
 - (void)activateAlertItem:(id)alert
 {
-        NSLog(@"Alert item = %@",alert);
+        NSLog(@"[Disembark] Alert item = %@",alert);
+        NSLog(@"[Disembark] Cellular is %@", (CTCellularDataPlanGetIsEnabled() ? @"on" : @"off"));
+        NSLog(@"[Disembark] Wifi is %@", ([[objc_getClass("SBWiFiManager") sharedInstance] wiFiEnabled] ? @"on" : @"off"));
        //UIAlertView *input = (UIAlertView *)alert;
 
 
-         if ([alert isKindOfClass:[%c(SBLaunchAlertItem) class]]) 
+         if ([alert isKindOfClass:[%c(SBUserNotificationAlert) class]])
          {
 
             UIAlertView *alert = [[UIAlertView alloc]
-                                initWithTitle:@"Write here"
-                                      message:@"Nope"
+                                initWithTitle:@"Cellular Data is Turned Off"
+                                      message:@"Turn on cellular data or use Wi-Fi to access data."
                                      delegate:self
                             cancelButtonTitle:@"Ignore"
-                            otherButtonTitles:@"Settings", @"Turn off Airplane",@"Turn on Wi-Fi", nil];
+                            otherButtonTitles:@"Settings", @"Turn on Cellular Data", @"Turn on Wi-Fi", nil];
                                 alert.tag = myAlertViewsTag;
         [alert show];
         [alert release];
                     return;
         }
- 
+
        /*if ([item isKindOfClass:%c(SBLaunchAlertItem)])
         {
                 NSLog(@"Alert item = %@",item);
@@ -99,46 +104,29 @@ static SBWiFiManager *wiFiManager;
         }else*/
 %orig;
 }
- 
- 
- 
-//Feb 25 20:05:03 Joshs-iPhone SpringBoard[1368]: Clicked button 1//settings
-//Feb 25 20:05:12 Joshs-iPhone SpringBoard[1368]: Clicked button 2//turn off airplane
-//Feb 25 20:06:48: --- last message repeated 1 time ---
-//Feb 25 20:06:48 Joshs-iPhone SpringBoard[1368]: Clicked button 3//turn off wifi
-//Feb 25 20:07:00 Joshs-iPhone SpringBoard[1368]: Clicked button 0//OK
-
 
 %new(v@:@@)
 -(void)alertView:(UIAlertView *)alertView didDismissWithButtonIndex:(NSInteger)buttonIndex {
-    if (alertView.tag == myAlertViewsTag)
-        {
+    if (alertView.tag == myAlertViewsTag) {
         if (buttonIndex == 0) {
-           NSLog(@"Clicked button 0");
+           NSLog(@"[Disembark] Clicked button 0");
         }
         else if (buttonIndex == 1)
         {
-                 NSLog(@"Clicked button 1");
-                 [[UIApplication sharedApplication] openURL:[NSURL URLWithString:@"prefs://"]];
+             NSLog(@"[Disembark] Clicked button 1");
+             [[UIApplication sharedApplication] openURL:[NSURL URLWithString:@"prefs:root=WIFI"]];
         }else if (buttonIndex == 2)
         {
-         NSLog(@"Clicked button 2");
-                telephonyManager = [objc_getClass("SBTelephonyManager") sharedTelephonyManager];
-                        bool mode = [telephonyManager isInAirplaneMode];
-                        [telephonyManager setIsInAirplaneMode:!mode];
+            NSLog(@"[Disembark] Clicked button 2");
+            CTCellularDataPlanSetIsEnabled(true);
         }else if (buttonIndex == 3)
         {
-         NSLog(@"Clicked button 3");
-                wiFiManager = [objc_getClass("SBWiFiManager") sharedInstance];
-                bool mode = [wiFiManager wiFiEnabled];
-                [wiFiManager setWiFiEnabled:!mode];
+            NSLog(@"[Disembark] Clicked button 3");
+            wiFiManager = [objc_getClass("SBWiFiManager") sharedInstance];
+            [wiFiManager setWiFiEnabled:true];
         }
-        }
-        else
-        {
-        }
- 
+    }
 }
 
- 
+
 %end

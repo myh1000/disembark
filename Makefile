@@ -1,10 +1,10 @@
 ARCHS = armv7 arm64
 
-include theos/makefiles/common.mk
+include $(THEOS)/makefiles/common.mk
 
-TWEAK_NAME = Disembark
-Disembark_FILES = Tweak.xm
-Disembark_FRAMEWORKS = UIKit
+TWEAK_NAME = disembark
+disembark_FILES = Tweak.xm
+disembark_FRAMEWORKS = UIKit CoreTelephony
 
 include $(THEOS_MAKE_PATH)/tweak.mk
 

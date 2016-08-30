@@ -1,9 +1,9 @@
-Package: com.joshdoctors.disembark
+Package: com.myh1000.disembark
 Name: Disembark
 Depends: mobilesubstrate
-Version: 0.0.1
+Version: 1.0
 Architecture: iphoneos-arm
-Description: An awesome MobileSubstrate tweak!
-Maintainer: Josh Doctors
-Author: Josh Doctors
+Description: Don't have to go to settings to turn on stuff
+Maintainer: michael huang
+Author: michael huang
 Section: Tweaks
